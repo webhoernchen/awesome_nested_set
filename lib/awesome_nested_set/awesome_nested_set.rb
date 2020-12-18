@@ -92,15 +92,21 @@ module CollectiveIdea #:nodoc:
       end
 
       def acts_as_nested_set_relate_parent!
+        is_polymorphic = acts_as_nested_set_options[:polymorphic]
+
         options = {
           :class_name => self.base_class.to_s,
           :foreign_key => parent_column_name,
           :primary_key => primary_column_name,
           :counter_cache => acts_as_nested_set_options[:counter_cache],
-          :inverse_of => (:children unless acts_as_nested_set_options[:polymorphic]),
-          :polymorphic => acts_as_nested_set_options[:polymorphic],
+          :inverse_of => (:children unless is_polymorphic),
           :touch => acts_as_nested_set_options[:touch]
         }
+        
+        # polymorphic is only allowed if is true
+        # since ActiveRecord 6.1
+        options[:polymorphic] = is_polymorphic if is_polymorphic
+
         options[:optional] = true if ActiveRecord::VERSION::MAJOR >= 5
         belongs_to :parent, **options
       end
